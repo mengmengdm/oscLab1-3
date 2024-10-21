@@ -33,9 +33,9 @@ dplist_t *dpl_create() {
 void dpl_free(dplist_t **list) {
 
     //TODO: add your code here
-    free(list);
-    //Do extensive testing with valgrind. 
+    free(*list);
 
+    //Do extensive testing with valgrind.
 }
 
 /* Important note: to implement any list manipulation operator (insert, append, delete, sort, ...), always be aware of the following cases:
@@ -67,6 +67,9 @@ dplist_t *dpl_insert_at_index(dplist_t *list, element_t element, int index) {
         list->head = list_node;
         // pointer drawing breakpoint
     } else {
+        if (index >dpl_size(list)) {
+            index = dpl_size(list);
+        }
         ref_at_index = dpl_get_reference_at_index(list, index);
         assert(ref_at_index != NULL);
         // pointer drawing breakpoint
@@ -119,24 +122,33 @@ dplist_t *dpl_remove_at_index(dplist_t *list, int index) {
 
 int dpl_size(dplist_t *list) {
     int count = 0;
-    dplist_node_t *dummy = list->head;
-    while(dummy->next!=NULL) {
-        dummy = dummy->next;
-        count++;
+    if(list==NULL||list->head==NULL) {
+        return 0;
     }
-    return count++;
-    //TODO: add your code here
+    else {
+        dplist_node_t *dummy = list->head;
+        while(dummy->next!=NULL) {
+            dummy = dummy->next;
+            count++;
+        }
+        return count++;
+    }
+
 }
 
 dplist_node_t *dpl_get_reference_at_index(dplist_t *list, int index) {
-    int count = 0 ;
-    dplist_node_t *dummy = list->head;
-    while(count<index) {
-        dummy = dummy->next;
-        index++;
+    if (index<=dpl_size(list)) {
+        int count = 0 ;
+        dplist_node_t *dummy = list->head;
+        while(count<index) {
+            dummy = dummy->next;
+            count++;
+        }
+        return dummy;
     }
-    //TODO: add your code here
-    return dummy;
+    else {
+        return dpl_get_reference_at_index(list, dpl_size(list)-1);
+    }
 }
 
 element_t dpl_get_element_at_index(dplist_t *list, int index) {
