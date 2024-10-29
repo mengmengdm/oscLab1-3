@@ -68,7 +68,7 @@ void dpl_free(dplist_t **list, bool free_element) {
             if (free_element) { (*list)->element_free(&(current_node->element));}
             free(current_node);
         }
-        free((*list)->head);
+        //free((*list)->head);
         free(next_node);
         *list = NULL;
         return;
@@ -108,8 +108,10 @@ dplist_t *dpl_insert_at_index(dplist_t *list, void *element, int index, bool ins
         list->head = inserted_node;
         // pointer drawing breakpoint
     } else {
-        if (index >=dpl_size(list)) {
-            index = dpl_size(list) - 1;
+        int list_size = dpl_size(list);
+        //if the index >= size of the list
+        if (index >= list_size) {
+            index = list_size;
             ref_at_index = dpl_get_reference_at_index(list, index);
             assert(ref_at_index->next == NULL);
             inserted_node->next = NULL;
@@ -119,9 +121,10 @@ dplist_t *dpl_insert_at_index(dplist_t *list, void *element, int index, bool ins
         }
 
         // pointer drawing breakpoint
-        if (index < dpl_size(list)) { // covers case 4
+        else if (index < list_size) { // covers case 4
             ref_at_index = dpl_get_reference_at_index(list, index);
             assert(ref_at_index != NULL);
+            ref_at_index->prev->next = inserted_node;
             inserted_node->prev = ref_at_index->prev;
             inserted_node->next = ref_at_index;
             ref_at_index->prev= inserted_node;
@@ -143,7 +146,10 @@ dplist_t *dpl_remove_at_index(dplist_t *list, int index, bool free_element) {
 
     dplist_node_t *node_at_index = dpl_get_reference_at_index(list, index);
 
-    if (node_at_index == list->head) {
+    if (node_at_index == list->head && node_at_index->next == NULL) {
+        list->head = NULL;
+    }
+    else if (node_at_index == list->head && node_at_index->next != NULL) {
         node_at_index->next->prev = NULL;
         list->head = node_at_index->next;
     }
@@ -178,7 +184,7 @@ int dpl_size(dplist_t *list) {
             dummy = dummy->next;
             count++;
         }
-        return count++;
+        return ++count;
     }
 }
 
@@ -265,6 +271,9 @@ void *dpl_get_element_at_reference(dplist_t *list, dplist_node_t *reference) {
             return dummy->element;
         }
         dummy = dummy->next;
+    }
+    if (dummy->next == NULL && dummy ==reference) {
+        return dummy->element;
     }
 
     return NULL;
